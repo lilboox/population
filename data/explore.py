@@ -19,14 +19,29 @@ COL_OFFSET = 180  # 180 degrees longitude
 def plot_data(data):
     """Plot np data as hot color map, in log scale"""
 
-    # change negative values in data to 0
-    data[data < 0] = 0
+    # change 'unknown' values in data to 0
+    data[data == 200] = 0
 
     # Plot np data as hot color map, in log scale, with color bar,
     # and set the color bar to log scale
     fig, ax = plt.subplots()
     im = ax.imshow(data, norm=colors.LogNorm(), cmap="hot_r")
     fig.colorbar(im, ax=ax, norm=colors.LogNorm())
+    plt.show()
+
+
+def plot_two_data(data1, data2):
+    """Plot np data as hot color map, in linear scale.
+    Plot two side by side plots."""
+
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    im1 = ax1.imshow(data1, cmap="hot_r")
+    fig.colorbar(im1, ax=ax1)
+    im2 = ax2.imshow(data2, cmap="hot_r")
+    fig.colorbar(im2, ax=ax2)
+
+    # resize the plot window
+    fig.set_size_inches(16, 10)
     plt.show()
 
 
@@ -77,6 +92,6 @@ if __name__ == "__main__":
     # read and plot a subset of data, it is too large to read whole at once
     # Supposed to be new york city, but the plot is about 33.7 S -83.2 W
     # data = read_subset(latitude=40.71, longitude=-74.01, size=10000) # Real NY coords
-    # data = read_subset(latitude=47.71, longitude=-64.01, size=2000)  # adjusted NY coords
+    # data = read_subset(latitude=47.71, longitude=-64.01, size=1000)  # adjusted NY coords
 
     plot_data(data[0])
