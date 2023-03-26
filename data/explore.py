@@ -30,35 +30,32 @@ def plot_data(data):
     plt.show()
 
 
-def plot_globe(src):
-    """Read the whole data resampled to 1 degree"""
+def read_resampled(resolution=0.1):
+    """Read the whole data resampled to a resolution in degrees"""
 
-    data = src.read(
-        out_shape=(
-            src.count,
-            int(src.height / ROW_SCALE),
-            int(src.width / COL_SCALE),
-        ),
-        resampling=Resampling.bilinear,
-    )
+    with rasterio.open(f"{ROOT_DIR}/{POP_FILENAME}") as src:
+        return src.read(
+            out_shape=(
+                src.count,
+                int(src.height / ROW_SCALE / resolution),
+                int(src.width / COL_SCALE / resolution),
+            ),
+            resampling=Resampling.bilinear,
+        )
 
-    plot_data(data[0])
 
-
-def plot_subset(src, latitude, longitude, size):
+def read_subset(latitude, longitude, size):
     """Read and plot a subset of data"""
 
-    # Read the raster data
-    data = src.read(
-        window=Window(
-            (COL_OFFSET + longitude) * COL_SCALE - size / 2,
-            (ROW_OFFSET - latitude) * ROW_SCALE - size / 2,
-            size,
-            size,
+    with rasterio.open(f"{ROOT_DIR}/{POP_FILENAME}") as src:
+        return src.read(
+            window=Window(
+                (COL_OFFSET + longitude) * COL_SCALE - size / 2,
+                (ROW_OFFSET - latitude) * ROW_SCALE - size / 2,
+                size,
+                size,
+            )
         )
-    )
-
-    plot_data(data[0])
 
 
 def data_summary():
@@ -70,13 +67,16 @@ def data_summary():
         print("Tiff Shape", src.shape)
         print("Tiff Count", src.count)
 
-        # plot the whole data resampled to 1 degree
-        plot_globe(src)
-
-        # read and plot a subset of data, it is too large to read whole at once
-        # Supposed to be new york city, but the plot is about 33.7 S -83.2 W
-        plot_subset(src, latitude=40.71, longitude=-74.01, size=10000)
-
 
 if __name__ == "__main__":
     data_summary()
+
+    # plot the whole data resampled to 1 degree
+    data = read_resampled(resolution=1)
+
+    # read and plot a subset of data, it is too large to read whole at once
+    # Supposed to be new york city, but the plot is about 33.7 S -83.2 W
+    # data = read_subset(latitude=40.71, longitude=-74.01, size=10000) # Real NY coords
+    # data = read_subset(latitude=47.71, longitude=-64.01, size=2000)  # adjusted NY coords
+
+    plot_data(data[0])
